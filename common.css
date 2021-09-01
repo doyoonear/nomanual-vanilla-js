@@ -1,0 +1,48 @@
+body {
+	font-family: 'Red Hat Display', 'Helvetica Neue' ,'Helvetica', sans-serif;
+}
+
+.hidden {
+  position: fixed;
+  opacity: 0;
+}
+
+.sitetitle.img > img {
+  width: 200px;
+}
+
+.menu-item > a {
+  font-size: 12px;
+  font-family: 'Red Hat Display', 'Helvetica Neue' ,'Helvetica', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.caption > p > span {
+    font-family: 'Red Hat Display', 'Helvetica Neue' ,'Helvetica', sans-serif;
+	letter-spacing: 0.2px;
+}
+
+
+/* mobile view */
+@media (max-width: 600px) {
+  .mobile-title {
+  	top: 2vh;
+  }
+}
+
+
+@media (min-width: 601px) and (max-width: 800px) {
+  .mobile-title {
+  	top: 2.1vh;
+  }
+}
+
+@media (min-width: 801px) and (max-width: 1024px) {
+  .mobile-title {
+  	top: 2.2vh;
+  }
+}
+
+img.lay-image-responsive.lazyloaded:hover {
+  opacity: 0.7;
+}

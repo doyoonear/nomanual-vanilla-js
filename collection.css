@@ -1,0 +1,137 @@
+/* 
+.relative-box {
+  position: relative;
+} */
+
+/* desktop view */
+@media (min-width: 1024px) {
+  /* collection-main page */
+
+  .collection_title-img > .img {
+    position: relative;
+    height: 85vh;
+    top: 2vh;
+  }
+  
+  .collection_title-img > .img > a > img {
+    position: absolute;
+    top: 6vh !important;
+  }
+  
+  .collection_title-img > .img > .caption {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    text-align: center;
+  }
+  
+   /* collection-detail page */
+
+  .relative-box {
+    position: relative;
+  }
+
+  #grid.detail_grid {
+    position: relative;
+  }
+
+  .collection_main-container {
+    position: fixed;
+    top: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 88vh;
+    width: 100vw;
+    padding: 0;
+  }
+
+  .collection_main-img-wrapper {
+    position: relative;
+    z-index: 10;
+    width: auto;
+    opacity: 1;
+    transition: opacity 300ms ease-out;
+  }
+  
+  .collection_main-img {
+    max-width: 42vw;
+    max-height: 88vh;
+  }
+  
+  .collection_arrow-left {
+    position: absolute;
+    top: 10vw;
+    left: 0.7vw;
+    z-index: 20;
+    width: 15vw;
+    height: 45vh;
+    opacity: 0.7;
+  }
+  
+   .collection_arrow-right {
+    position: absolute;
+    top: 10vw;
+    right: 0.7vw;
+    z-index: 20;
+    width: 15vw;
+    height: 45vh;
+    opacity: 0.7;
+  }
+}
+
+/* tablet view */
+@media (min-width: 601px) and (max-width: 1023px) {
+  /* collection-main page */
+
+  .collection_title-img > .img {
+    position: relative;
+    height: 900px;
+  }
+  
+  .collection_title-img > .img > a > img {
+    position: absolute;
+    top: 30px !important;
+  }
+  
+  .collection_title-img > .img > .caption {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    text-align: center;
+  }
+  
+  /* collection-detail page */
+  .collection_main-img {
+ 	opacity: 0;
+  }
+  
+}
+
+
+
+/* mobile view */
+@media (max-width: 600px) {
+  /* collection-main page */
+  .collection_title-img > .img {
+    position: relative;
+    height: 480px;
+  }
+  
+  .collection_title-img > .img > a > img {
+    position: absolute;
+    top: 30px !important;
+  }
+  
+  .collection_title-img > .img > .caption {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    text-align: center;
+  }
+  
+  /* collection-detail page */
+  .collection_main-img {
+ 	opacity: 0;
+  }
+}
