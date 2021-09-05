@@ -22,24 +22,20 @@ const getSlugListByCategoryId = async function() {
 const getMediaIdBySlugs = async function(slugList) {
   console.log('getMediaIdBySlugs start')
 
-  function getPostBySlug(slugName) {
-    const bbb = window.fetch(`https://nomanual-official.com/wp-json/wp/v2/posts?slug=${slugName}`, {
+  let resultAA = [];
+
+  const callback = async (slug) => {
+    try {
+      const [res] = await window.fetch(`https://nomanual-official.com/wp-json/wp/v2/posts?slug=${slug}`, {
       method: 'GET', 
       headers: {
         'Content-Type': 'application/json',
       },
     }).then((res)=> res.json());
-    return bbb;
-  }
-
-  let resultAA = [];
-
-  const callback = async (slug) => {
-    try {
-      // updateResult 함
-      const [res] = await getPostBySlug(slug); // {}
+     
       resultAA = [...resultAA, res];
-      console.log('resultAA', resultAA)
+
+      console.log('resultAA', resultAA);
       return resultAA; // [promise, promise]
     }
     catch(err) {
@@ -50,7 +46,7 @@ const getMediaIdBySlugs = async function(slugList) {
   let forResult = [];
 
   for(let i in slugList) {
-    const b = callback(slugList[i]); // [promise, promise]
+    const b = await callback(slugList[i]); // [promise, promise]
     const c = b.then((p1)=> p1.map((el)=> el.featuredMedia));
     forResult = [...forResult, c];
   }
