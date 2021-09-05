@@ -1,11 +1,10 @@
-const getMediaSrcById = async function(mediaId) {
-  const result = await window.fetch(`https://nomanual-official.com/wp-json/wp/v2/media/${mediaId}`, {
+const getMediaSrcById = function(mediaId) {
+  return window.fetch(`https://nomanual-official.com/wp-json/wp/v2/media/${mediaId}`, {
     method: 'GET', 
     headers: {
       'Content-Type': 'application/json',
     },
   }).then((res)=> res.json())
-  console.log('getMediaSrcById', result)
 }
 
 const getSlugListByCategoryId = async function() {
@@ -17,40 +16,55 @@ const getSlugListByCategoryId = async function() {
   }).then((res)=> res.json())
 
   const collectionDetailSlugs = data.filter((post)=> post.slug.includes('collection-')).map((post)=> post.slug)
-  return collectionDetailSlugs
+  return collectionDetailSlugs;
 }
 
-async function getPostBySlug (slugName) {
-  return await window.fetch(`https://nomanual-official.com/wp-json/wp/v2/posts?slug=${slugName}`, {
-    method: 'GET', 
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }).then((res)=> res.json())
-}
-
-let resultAA = [];
-
-async function getMediaIdBySlugs (list) {
-  async function callback(slug) {
-    const [data] = await getPostBySlug(slug); // 1
-    resultAA = [...resultAA, data];
-    return resultAA;
+const getMediaIdBySlugs = async function(slugList) {
+  console.log('getMediaIdBySlugs start')
+  function getPostBySlug(slugName) {
+    console.log('getPostBySlug');
+    const bbb = window.fetch(`https://nomanual-official.com/wp-json/wp/v2/posts?slug=${slugName}`, {
+      method: 'GET', 
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then((res)=> res.json());
+    return resultAA = [...resultAA, bbb];
+    // console.log('resultAA', resultAA)
+    // return resultAA;
   }
 
-  const foundPostList = list.map(callback)
+  let resultAA = [];
 
-  return foundPostList //promise
+  slugList.forEach(async (slug)=> {
+    try {
+      // updateResult 함
+      await getPostBySlug(slug);
+    }
+    catch(err) {
+      console.error(err)
+    }
+  });
+
+  console.log('resultAA', resultAA)
+
+  console.log('getMediaIdBySlugs end')
+  return resultAA;
 }
 
 async function letsGo() {
+  console.log('letsGo start')
   const mediaId = 417;
 
   try {
     const AAA = await getSlugListByCategoryId();
     const BBB = await getMediaIdBySlugs(AAA);
+    // BBB.forEach((promise)=> { return promise.then((val) => console.log(val))})
     // await getMediaSrcById(mediaId);
     console.log('BBB >>> ', BBB);
+    const CCC = BBB.map((el)=>{ console.log('el', el); return el.then((p)=> p)})
+    console.log('CCC >>> ', CCC);
+    console.log('letsGo end')
     return BBB;
   } catch(err) {
     console.error(err);
@@ -66,8 +80,7 @@ async function letsGo() {
     // featuredMedia 에 media id 들어있음. 
     // /media/mediaId 로 호출하면, 해당 media 주소 가져올수있음 source_url 에 페이지 주소 들어있음. 
 
-  const b = letsGo().resolve();
-  console.log('b', b)
+letsGo();
 
 const mountCollectionDetail = async function() {
   // collection 상세페이지
