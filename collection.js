@@ -1,12 +1,3 @@
-const getMediaSrcById = function(mediaId) {
-  return window.fetch(`https://nomanual-official.com/wp-json/wp/v2/media/${mediaId}`, {
-    method: 'GET', 
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }).then((res)=> res.json())
-}
-
 const getSlugListByCategoryId = async function() {
   const data = await window.fetch('https://nomanual-official.com/wp-json/wp/v2/posts?categories=2', {
     method: 'GET', 
@@ -19,12 +10,12 @@ const getSlugListByCategoryId = async function() {
   return collectionDetailSlugs;
 }
 
-const getMediaIdBySlugs = async function(slugList) {
-  console.log('getMediaIdBySlugs start')
+const getPostListBySlug = async function(slugList) {
+  console.log('getPostListBySlug start')
 
   let resultAA = [];
 
-  const callback = async (slug) => {
+  const fetchPostList = async (slug) => {
     try {
       const [res] = await window.fetch(`https://nomanual-official.com/wp-json/wp/v2/posts?slug=${slug}`, {
       method: 'GET', 
@@ -45,8 +36,7 @@ const getMediaIdBySlugs = async function(slugList) {
   let forResult = [];
 
   for(let i in slugList) {
-    const b = await callback(slugList[i]); 
-    console.log('b', b);
+    const b = await fetchPostList(slugList[i]); 
     const c = b.map((el)=> el.featuredMedia);
     forResult = [...forResult, c];
   }
@@ -54,33 +44,74 @@ const getMediaIdBySlugs = async function(slugList) {
   return resultAA;
 }
 
-async function letsGo() {
-  console.log('letsGo start')
-  const mediaId = 417;
+const getMediaSrc = async function(mediaIdList) {
+  const fetchMediaSrcById = function(mediaId) {
+    return window.fetch(`https://nomanual-official.com/wp-json/wp/v2/media/${mediaId}`, {
+      method: 'GET', 
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then((res)=> res.json())
+  }
 
+  const callbackAgain = async function(id) {
+    const data = await fetchMediaSrcById(id);
+    const src = data.source_url;
+    return src;
+  }
+  
+  let srcList = [];
+
+  for(let i in mediaIdList) {
+    const src = await callbackAgain(mediaIdList[i])
+    srcList = [...srcList, src];
+  }
+  
+  return srcList;
+}
+
+async function letsGo() {
   try {
-    const AAA = await getSlugListByCategoryId();
-    const BBB = await getMediaIdBySlugs(AAA);
-    return BBB;
+    const slugList = await getSlugListByCategoryId(); // ['collection-2021fw-concept', 'collection-2021fw-studio'] - categoryId 2 ('collection') 에 걸리는 slugList
+    const postList = await getPostListBySlug(slugList); // 아래 postList 참고 - 해당 slugList 로 필터된 찾은 실제 postList
+    const mediaIdList = postList.map((post)=> post.featured_media); // [457, 417]
+    const srcList = await getMediaSrc(mediaIdList); // 이제 맞는 slug 인 곳에 route 로 이동했을때 거기것을 가져다가 쓰기. 
+    return {
+      slugList,
+      postList,
+      mediaIdList,
+      srcList,
+    }
   } catch(err) {
     console.error(err);
   }
 }
 
-    // categories 에서 name 이 COLLECTION 인 것을 찾아서 id 를 알게됨 -> 2 
-    // post 에서 categoryId 2 를 포함하는 애들을 가져옴 filter
-
-    // 그리고 그 리스트의 slug 들을 뽑아서 /posts?slug={slugName} 호출
-
-    // posts: [ { featuredMedia: 417 }, {}] 
-    // featuredMedia 에 media id 들어있음. 
-    // /media/mediaId 로 호출하면, 해당 media 주소 가져올수있음 source_url 에 페이지 주소 들어있음. 
-
-letsGo();
+/*
+  postList: [{}, {}, {}],
+  post: {
+    author: 1
+    categories: [2]
+    content: {rendered: '', protected: false}
+    featured_media: 457
+    id: 439
+    link: "https://nomanual-official.com/collection-2021fw-studio/"
+    meta: []
+    slug: "collection-2021fw-studio"
+    status: "publish"
+    sticky: false
+    tags: [10]
+    template: ""
+    title: {rendered: '2021FW STUDIO'}
+    type: "post"
+  }
+*/
 
 const mountCollectionDetail = async function() {
+ 
+    
   // collection 상세페이지
-  if (window.document.location.pathname.includes('/collection-')) {
+  // if (window.document.location.pathname.includes('/collection-')) {
     const createElement = function() {
       const grid = document.querySelector('.grid-inner')
       grid.classList.add('relative-box');
@@ -126,7 +157,7 @@ const mountCollectionDetail = async function() {
       return; 
     }
 
-    const makeDetailMainImg = function() {
+    const makeDetailMainImg = async function() {
       const { grid, mainImgContainer, mainImg, mainImgWrapper, leftArrowContainer, rightArrowContainer, leftArrow, rightArrow } = createElement();
 
       const layGrid = document.querySelector('#grid');
@@ -147,25 +178,30 @@ const mountCollectionDetail = async function() {
         leftArrowContainer.addEventListener('click', ()=> setSmallImgAsMainByArrow(smallImgNodeList, { type: 'left' }));
         rightArrowContainer.addEventListener('click', ()=> setSmallImgAsMainByArrow(smallImgNodeList, { type: 'right' }));
       }
-  
-      const collectionName = window.document.location.pathname;
-      
-      // TODO: collection_main-img detail 페이지 처음에 바인딩하는것 고정값 말고 smallImgDataSrc 에서 불러와서
-      if (collectionName.includes('2021fw-studio')) {
-        const collectionImgUrl = '21FW_lookbook_studio_018'
-        mainImg.setAttribute('src', `./wp-content/uploads/${collectionImgUrl}.jpg`);
-        appendMainImgAndArrow();
-        listenArrowClick();
-        return;
+
+      const useSlugForMainImgSrc = async function() {
+        const {  
+          slugList,
+          postList,
+          mediaIdList,
+          srcList } = await letsGo();
+
+          const collectionName = window.document.location.pathname;
+
+        for(let i in slugList) {
+          console.log('slugList[i]', slugList[i]);
+          if (collectionName.includes(slugList[i])) {
+            console.log(' srcList[i]',  srcList[i]);
+            const collectionImgUrl = srcList[i];
+            mainImg.setAttribute('src', `./wp-content/uploads/${collectionImgUrl}.jpg`);
+            appendMainImgAndArrow();
+            listenArrowClick();
+            return;
+          }
+        }
       }
-      
-      if (collectionName.includes('2021fw-concept')) {
-        const collectionImgUrl = '21FW_lookbook_concept_001'
-        mainImg.setAttribute('src', `./wp-content/uploads/${collectionImgUrl}.jpg`);
-        appendMainImgAndArrow();
-        listenArrowClick();
-        return;
-      }
+
+      useSlugForMainImgSrc();
     }
 
     const setMainImgVisible = function() {
@@ -173,7 +209,7 @@ const mountCollectionDetail = async function() {
       mainImgWrapper.classList.remove('hidden');
     }
 
-    makeDetailMainImg();
+    await makeDetailMainImg();
     await setTimeout(setMainImgVisible, 300);
     
     const setSmallImgAsMainImg = function({ smallImgDataSrc }) {
@@ -204,7 +240,7 @@ const mountCollectionDetail = async function() {
     }
     
     listenSmallImgToShowAsMain();
-  }
+  // }
   return null;
 }
 
@@ -239,4 +275,3 @@ function addCustomRouterEvent() {
 
 window.addEventListener('load', () => addCustomRouterEvent());
 window.addEventListener('load', ()=> setTimeout(mountCollectionDetail, 200));
-
