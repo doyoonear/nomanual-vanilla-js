@@ -1,3 +1,74 @@
+const getMediaSrcById = async function(mediaId) {
+  const result = await window.fetch(`https://nomanual-official.com/wp-json/wp/v2/media/${mediaId}`, {
+    method: 'GET', 
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }).then((res)=> res.json())
+  console.log('getMediaSrcById', result)
+}
+
+const getSlugListByCategoryId = async function() {
+  const data = await window.fetch('https://nomanual-official.com/wp-json/wp/v2/posts?categories=2', {
+    method: 'GET', 
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }).then((res)=> res.json())
+
+  const collectionDetailSlugs = data.filter((post)=> post.slug.includes('collection-')).map((post)=> post.slug)
+  return collectionDetailSlugs
+}
+
+async function getPostBySlug (slugName) {
+  return await window.fetch(`https://nomanual-official.com/wp-json/wp/v2/posts?slug=${slugName}`, {
+    method: 'GET', 
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }).then((res)=> res.json())
+}
+
+let resultAA = [];
+
+async function getMediaIdBySlugs (list) {
+  async function callback(slug) {
+    const [data] = await getPostBySlug(slug); // 1
+    resultAA = [...resultAA, data];
+    return resultAA;
+  }
+
+  const foundPostList = list.map(callback)
+
+  return foundPostList //promise
+}
+
+async function letsGo() {
+  const mediaId = 417;
+
+  try {
+    const AAA = await getSlugListByCategoryId();
+    const BBB = await getMediaIdBySlugs(AAA);
+    // await getMediaSrcById(mediaId);
+    console.log('BBB >>> ', BBB);
+    return BBB;
+  } catch(err) {
+    console.error(err);
+  }
+}
+
+    // categories 에서 name 이 COLLECTION 인 것을 찾아서 id 를 알게됨 -> 2 
+    // post 에서 categoryId 2 를 포함하는 애들을 가져옴 filter
+
+    // 그리고 그 리스트의 slug 들을 뽑아서 /posts?slug={slugName} 호출
+
+    // posts: [ { featuredMedia: 417 }, {}] 
+    // featuredMedia 에 media id 들어있음. 
+    // /media/mediaId 로 호출하면, 해당 media 주소 가져올수있음 source_url 에 페이지 주소 들어있음. 
+
+  const b = letsGo().resolve();
+  console.log('b', b)
+
 const mountCollectionDetail = async function() {
   // collection 상세페이지
   if (window.document.location.pathname.includes('/collection-')) {
@@ -159,3 +230,4 @@ function addCustomRouterEvent() {
 
 window.addEventListener('load', () => addCustomRouterEvent());
 window.addEventListener('load', ()=> setTimeout(mountCollectionDetail, 200));
+
