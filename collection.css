@@ -31,10 +31,6 @@
     position: relative;
   }
 
-  #grid.detail_grid {
-    position: relative;
-  }
-
   .collection_main-container {
     position: fixed;
     top: 80px;
