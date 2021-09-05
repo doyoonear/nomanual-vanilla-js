@@ -35,8 +35,7 @@ const getMediaIdBySlugs = async function(slugList) {
      
       resultAA = [...resultAA, res];
 
-      console.log('resultAA', resultAA);
-      return resultAA; // [promise, promise]
+      return resultAA; 
     }
     catch(err) {
       console.error(err)
@@ -46,16 +45,13 @@ const getMediaIdBySlugs = async function(slugList) {
   let forResult = [];
 
   for(let i in slugList) {
-    const b = await callback(slugList[i]); // [promise, promise]
-    const c = b.then((p1)=> p1.map((el)=> el.featuredMedia));
+    const b = await callback(slugList[i]); 
+    console.log('b', b);
+    const c = b.map((el)=> el.featuredMedia);
     forResult = [...forResult, c];
   }
 
-  console.log('forResult', forResult);
-  
-  console.log('resultAA 바깥 >>>', resultAA)
-
-  return resultAA; // []
+  return resultAA;
 }
 
 async function letsGo() {
@@ -65,10 +61,6 @@ async function letsGo() {
   try {
     const AAA = await getSlugListByCategoryId();
     const BBB = await getMediaIdBySlugs(AAA);
-    console.log('BBB >>> ', BBB); // [promise, promise]
-    const CCC = BBB.map((el)=>{ console.log('el', el); return el.then((p)=> p)})
-    console.log('CCC >>> ', CCC); // [promise, promise]
-    console.log('letsGo end')
     return BBB;
   } catch(err) {
     console.error(err);
