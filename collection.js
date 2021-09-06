@@ -202,39 +202,44 @@ const showSmallImgAsMainImg = function ({ smallImgDataSrc }) {
   };
 
   setSmallImgSrcToMainImg();
-
-  return mainImg;
+  return;
 };
 
 /* 
-  2. useArrow --------------
+  3. useArrow --------------
     Sum Arrow count, Use arrow count to get small image datasrc list
 */
 
-let ARROW_COUNT = 0;
-const useArrow = function (smallImgNodeList, { type }) {
-  const moveArrowCount = function () {
-    if (type === 'left' && ARROW_COUNT > 0) ARROW_COUNT--;
-    if (type === 'right' && ARROW_COUNT < smallImgNodeList.length - 1) ARROW_COUNT++;
 
-    return ARROW_COUNT;
-  };
-
-  const CURR_INDEX = moveArrowCount();
+let COUNT = 0;
+const useArrow = function (smallImgNodeList, { moveArrowCount, type }) {
+  const CURR_INDEX = moveArrowCount(COUNT, type);
   const smallImgDataSrc = smallImgNodeList[CURR_INDEX].getAttribute('data-srcset');
   showSmallImgAsMainImg({ smallImgDataSrc });
-
+  COUNT = CURR_INDEX;
   return;
 };
+
+/* 
+  4. attachListeners --------------
+    Attach Listeners
+*/
 
 const attachListeners = function () {
   const smallImgNodeList = document.querySelectorAll('.collection_small-img .img > img');
   const leftArrowContainer = document.querySelector('.collection_arrow-left');
-  const rightArrowContainer = document.querySelector('.collection_arrow-left');
+  const rightArrowContainer = document.querySelector('.collection_arrow-right');
 
   const listenArrowClick = function () {
-    leftArrowContainer.addEventListener('click', () => useArrow(smallImgNodeList, { type: 'left' }));
-    rightArrowContainer.addEventListener('click', () => useArrow(smallImgNodeList, { type: 'right' }));
+    const moveArrowCount = function (count, type) {
+      if (type === 'left' && count > 0) count--;
+      if (type === 'right' && count < smallImgNodeList.length - 1) count++;
+  
+      return count;
+    };
+
+    leftArrowContainer.addEventListener('click', () => useArrow(smallImgNodeList, { moveArrowCount, type: 'right' }));
+    rightArrowContainer.addEventListener('click', () => useArrow(smallImgNodeList, { moveArrowCount, type: 'right' }));
   };
 
   const listenSmallImgToShowAsMain = function () {
@@ -248,13 +253,13 @@ const attachListeners = function () {
   listenSmallImgToShowAsMain();
 };
 
-/* function
+/* 
   mountCollectionDetail 
 */
 const mountCollectionDetail = function () {
   const makeDetailMainImg = function () {
     const mountFirstImg = async function () {
-      const { slugList, postList, mediaIdList, srcList } = await letsGo();
+      const { slugList, srcList } = await letsGo();
       const collectionName = window.document.location.pathname;
       const mainImg = document.querySelector('.collection_main-img');
 
@@ -273,17 +278,17 @@ const mountCollectionDetail = function () {
 
   const setMainImgVisible = function () {
     const mainImgWrapper = document.querySelector('.collection_main-img-wrapper');
-    mainImgWrapper.classList.remove('hidden'); // mainImgWrapper null
+    mainImgWrapper.classList.remove('hidden'); 
   };
 
   appendElementsToGrid();
   attachListeners();
-  makeDetailMainImg(); // 첫이미지 mount
-  setTimeout(setMainImgVisible, 300); // mainImg 보이게
+  makeDetailMainImg(); 
+  setTimeout(setMainImgVisible, 300); 
   return;
 };
 
-/* function: addCustomRouterEvent */
+/* addCustomRouterEvent */
 function addCustomRouterEvent() {
   history.pushState = ((f) =>
     function pushState() {
