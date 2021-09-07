@@ -128,6 +128,6 @@
   
   /* collection-detail page */
   .collection_main-img {
- 	opacity: 0;
+ 	  display: none;
   }
 }
