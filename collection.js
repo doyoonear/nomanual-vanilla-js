@@ -25,7 +25,7 @@ API functions
 */
 const fetchSlugListByCategoryId = async function () {
   const data = await window
-    .fetch('https://nomanual-official.com/wp-json/wp/v2/posts?categories=2', {
+    .fetch('https://nomanual-official.com/wp-json/wp/v2/posts?categories=2&per_page=20', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ async function letsGo() {
     const slugList = await fetchSlugListByCategoryId(); // ['collection-2021fw-concept', 'collection-2021fw-studio'] - categoryId 2 ('collection') 에 걸리는 slugList
     const postList = await getPostListBySlug(slugList); // postList 참고 - 해당 slugList 로 필터된 찾은 실제 postList
     const mediaIdList = postList.map((post) => post.featured_media); // [457, 417]
-    const srcList = await getMediaSrc(mediaIdList); // 이제 맞는 slug 인 곳에 route 로 이동했을때 거기것을 가져다가 쓰기.
+    const srcList = await getMediaSrc(mediaIdList); // 이제 맞는 slug 인 곳에 route 로 이동했을때 거기것을 가져다가 쓰기
     return {
       slugList,
       postList,
@@ -257,13 +257,14 @@ const attachListeners = function () {
   mountCollectionDetail 
 */
 const mountCollectionDetail = function () {
-  const makeDetailMainImg = function () {
+   const makeDetailMainImg = function () {
     const mountFirstImg = async function () {
       const { slugList, srcList } = await letsGo();
       const collectionName = window.document.location.pathname;
       const mainImg = document.querySelector('.collection_main-img');
-
-      for (let i in slugList) {
+      const slugArr = Array.from(slugList);
+      
+      for (let i in slugArr) {
         if (collectionName.includes(slugList[i])) {
           const collectionImgUrl = srcList[i];
           mainImg.setAttribute('src', collectionImgUrl);
