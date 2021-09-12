@@ -1,9 +1,9 @@
-/* getFirstImgSrc */
+
 
 async function getFirstImgSrc() {
-  const fetchPostBySlug = async (slug) => { 
+  const fetchPostList = async (slug) => { // slug 보내서 해당 post 가져옴
     try {
-      const [result] = await window
+      const [res] = await window
         .fetch(`https://nomanual-official.com/wp-json/wp/v2/posts?slug=${slug}`, {
           method: 'GET',
           headers: {
@@ -12,13 +12,15 @@ async function getFirstImgSrc() {
         })
         .then((res) => res.json());
   
-      return result.featured_media;
+      const result = res.featured_media;
+
+      return result;
     } catch (err) {
       console.error(err);
     }
   };
 
-  const fetchMediaSrcById = function (mediaId) { 
+  const fetchMediaSrcById = function (mediaId) { //mediaId 뽑음
     return window
       .fetch(`https://nomanual-official.com/wp-json/wp/v2/media/${mediaId}`, {
         method: 'GET',
@@ -29,11 +31,33 @@ async function getFirstImgSrc() {
       .then((res) => res.json());
   };
   
-  const slug = window.location.pathname.split('/')[1];
-  const mediaId = await fetchPostBySlug(slug);
+  const slug = window.location.pathname.split('/')[1]; // slug 를 맨처음 가지고옴
+  const mediaId = await fetchPostList(slug);
   const mediaSrc = await fetchMediaSrcById(mediaId);
+  console.log('mediaSrc', mediaSrc.source_url);
   return mediaSrc.source_url;
 }
+
+
+async function useMediaSrc() {
+  try {
+    const slugList = await fetchSlugListByCategoryId(); 
+    const postList = await getPostListBySlug(slugList); 
+    const mediaIdList = postList.map((post) => post.featured_media); 
+    const srcList = await getMediaSrc(mediaIdList); // 이제 맞는 slug 인 곳에 route 로 이동했을때 거기것을 가져다가 쓰기
+    return {
+      slugList,
+      postList,
+      mediaIdList,
+      srcList,
+    };
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+
+
 
 /* 
   API
@@ -44,7 +68,7 @@ async function getFirstImgSrc() {
   - per_page (int) 한번 호출할때 20개로 일단 제한함 - limit
 
   - response: [{}, {}]
-  - properties for 1 post
+  - properties
       author: number
       categories: [categoryId, categoryId]
       comment_status: string
@@ -72,6 +96,112 @@ async function getFirstImgSrc() {
       type: string
       _links: {self: Array(1), collection: Array(1), about ...}
 */
+const fetchSlugListByCategoryId = async function () {
+  const data = await window
+    .fetch('https://nomanual-official.com/wp-json/wp/v2/posts?categories=2&per_page=30', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then((res) => res.json());
+
+  const collectionDetailSlugs = data.filter((post) => post.slug.includes('collection-')).map((post) => post.slug);
+  return collectionDetailSlugs;
+};
+
+/*
+  params: slug (string)
+  response: { post }
+*/
+
+const getPostListBySlug = async function (slugList) {
+  let result = [];
+
+  const fetchPostList = async (slug) => {
+    try {
+      const [res] = await window
+        .fetch(`https://nomanual-official.com/wp-json/wp/v2/posts?slug=${slug}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then((res) => res.json());
+
+      result = [...result, res];
+      return result;
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  let forResult = [];
+
+  for (let i in slugList) {
+    const b = await fetchPostList(slugList[i]);
+    const c = b.map((el) => el.featuredMedia);
+    forResult = [...forResult, c];
+  }
+
+  return result;
+};
+
+/*
+  API: GET
+  /v2/media/${mediaId}
+
+  params: mediaId
+  
+  response: string ?
+
+*/
+
+const getMediaSrc = async function (mediaIdList) {
+  const fetchMediaSrcById = function (mediaId) {
+    return window
+      .fetch(`https://nomanual-official.com/wp-json/wp/v2/media/${mediaId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then((res) => res.json());
+  };
+
+  const callback = async function (id) {
+    const data = await fetchMediaSrcById(id);
+    const src = data.source_url;
+    return src;
+  };
+
+  let srcList = [];
+
+  for (let i in mediaIdList) {
+    const src = await callback(mediaIdList[i]);
+    srcList = [...srcList, src];
+  }
+
+  return srcList;
+};
+
+
+async function letsGo() {
+  try {
+    const slugList = await fetchSlugListByCategoryId(); // ['collection-2021fw-concept', 'collection-2021fw-studio'] - categoryId 2 ('collection') 에 걸리는 slugList
+    const postList = await getPostListBySlug(slugList); // postList 참고 - 해당 slugList 로 필터된 찾은 실제 postList
+    const mediaIdList = postList.map((post) => post.featured_media); // [457, 417]
+    const srcList = await getMediaSrc(mediaIdList); // 이제 맞는 slug 인 곳에 route 로 이동했을때 거기것을 가져다가 쓰기
+    return {
+      slugList,
+      postList,
+      mediaIdList,
+      srcList,
+    };
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 /* 
   DOM functions
@@ -261,7 +391,7 @@ function addCustomRouterEvent() {
   });
 
   window.addEventListener('locationchange', async function () {
-    if ( window.location.pathname.includes('/collection-')) {
+    if (window.document.location.pathname.includes('/collection-')) {
       history.go(0);
       await setTimeout(mountCollectionDetail, 200);
     }
