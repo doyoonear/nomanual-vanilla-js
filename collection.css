@@ -31,10 +31,6 @@
     position: relative;
   }
 
-  #grid.detail_grid {
-    position: relative;
-  }
-
   .collection_main-container {
     position: fixed;
     top: 80px;
@@ -51,7 +47,7 @@
     z-index: 10;
     width: auto;
     opacity: 1;
-    transition: opacity 300ms ease-out;
+    transition: all 200ms ease-out;
   }
   
   .collection_main-img {
@@ -103,7 +99,7 @@
   
   /* collection-detail page */
   .collection_main-img {
- 	opacity: 0;
+    display: none;
   }
   
 }
@@ -132,6 +128,6 @@
   
   /* collection-detail page */
   .collection_main-img {
- 	opacity: 0;
+ 	  display: none;
   }
 }
