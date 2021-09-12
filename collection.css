@@ -47,7 +47,7 @@
     z-index: 10;
     width: auto;
     opacity: 1;
-    transition: opacity 300ms ease-out;
+    transition: all 200ms ease-out;
   }
   
   .collection_main-img {
@@ -99,7 +99,7 @@
   
   /* collection-detail page */
   .collection_main-img {
- 	opacity: 0;
+    display: none;
   }
   
 }

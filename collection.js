@@ -219,13 +219,11 @@ const mountCollectionDetail = async function () {
   if(!window.location.pathname.includes('/collection-')) return;
 
    const makeDetailMainImg = async function () {
-    console.log('makeDetailMainImg')
     const collectionImgUrl = await getFirstImgSrc();
     const mainImg = document.querySelector('.collection_main-img');
     mainImg.setAttribute('src', collectionImgUrl);
 
     const setMainImgVisible = function () {
-      console.log('setMainImgVisible')
       const mainImgWrapper = document.querySelector('.collection_main-img-wrapper');
       mainImgWrapper.classList.remove('hidden'); 
     };
