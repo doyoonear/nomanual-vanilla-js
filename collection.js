@@ -215,26 +215,30 @@ const attachListeners = function () {
 /* 
   mountCollectionDetail 
 */
-const mountCollectionDetail = function () {
-   const makeDetailMainImg = function () {
-    const mountFirstImg = async function () {
-      const collectionImgUrl = await getFirstImgSrc();
-      const mainImg = document.querySelector('.collection_main-img');
-      mainImg.setAttribute('src', collectionImgUrl);
+const mountCollectionDetail = async function () {
+  if(!window.document.location.pathname.includes('/collection-')) return;
+
+
+   const makeDetailMainImg = async function () {
+    console.log('makeDetailMainImg')
+    const collectionImgUrl = await getFirstImgSrc();
+    const mainImg = document.querySelector('.collection_main-img');
+    mainImg.setAttribute('src', collectionImgUrl);
+
+    const setMainImgVisible = function () {
+      console.log('setMainImgVisible')
+      const mainImgWrapper = document.querySelector('.collection_main-img-wrapper');
+      mainImgWrapper.classList.remove('hidden'); 
     };
 
-    return mountFirstImg();
+    setMainImgVisible(); 
   };
 
-  const setMainImgVisible = function () {
-    const mainImgWrapper = document.querySelector('.collection_main-img-wrapper');
-    mainImgWrapper.classList.remove('hidden'); 
-  };
 
   appendElementsToGrid();
   attachListeners();
-  makeDetailMainImg(); 
-  setTimeout(setMainImgVisible, 300); 
+  await makeDetailMainImg(); 
+
   return;
 };
 
@@ -261,12 +265,12 @@ function addCustomRouterEvent() {
   });
 
   window.addEventListener('locationchange', async function () {
-    if ( window.location.pathname.includes('/collection-')) {
+    if (window.document.location.pathname.includes('/collection-')) {
       history.go(0);
-      await setTimeout(mountCollectionDetail, 200);
+      await setTimeout(mountCollectionDetail, 300);
     }
   });
 }
 
 window.addEventListener('load', () => addCustomRouterEvent());
-window.addEventListener('load', () => setTimeout(mountCollectionDetail, 200));
+window.addEventListener('load', () => setTimeout(mountCollectionDetail, 300));
