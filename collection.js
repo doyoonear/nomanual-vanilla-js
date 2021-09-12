@@ -216,8 +216,7 @@ const attachListeners = function () {
   mountCollectionDetail 
 */
 const mountCollectionDetail = async function () {
-  if(!window.document.location.pathname.includes('/collection-')) return;
-
+  if(!window.location.pathname.includes('/collection-')) return;
 
    const makeDetailMainImg = async function () {
     console.log('makeDetailMainImg')
@@ -264,13 +263,13 @@ function addCustomRouterEvent() {
     window.dispatchEvent(new Event('locationchange'));
   });
 
-  window.addEventListener('locationchange', async function () {
-    if (window.document.location.pathname.includes('/collection-')) {
+  window.addEventListener('locationchange', function () {
+    if (window.location.pathname.includes('/collection-')) {
       history.go(0);
-      await setTimeout(mountCollectionDetail, 300);
+      mountCollectionDetail();
     }
   });
 }
 
 window.addEventListener('load', () => addCustomRouterEvent());
-window.addEventListener('load', () => setTimeout(mountCollectionDetail, 300));
+window.addEventListener('load', () => mountCollectionDetail());
